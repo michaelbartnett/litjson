@@ -245,6 +245,11 @@ namespace LitJson.Test
         public NullableEnum? TestEnum;
     }
 
+	public class DateTimeTest
+	{
+		public DateTime dateTimeValue;
+	}
+
 
     [TestFixture]
     public class JsonMapperTest
@@ -881,7 +886,7 @@ namespace LitJson.Test
 
             Assert.AreEqual (200, test.TestByte, "A1");
             Assert.AreEqual ('P', test.TestChar, "A2");
-            Assert.AreEqual (new DateTime (2012, 12, 22),
+			Assert.AreEqual (new DateTime (2012, 12, 22),
                              test.TestDateTime, "A3");
             Assert.AreEqual (10.333m, test.TestDecimal, "A4");
             Assert.AreEqual (-5, test.TestSByte, "A5");
@@ -1148,5 +1153,27 @@ namespace LitJson.Test
             expectedJson = "{\"TestEnum\":null}";
             Assert.AreEqual(expectedJson, JsonMapper.ToJson(value));
         }
+
+		[Test]
+		public void DateTimeShouldBeUniversalTest()
+		{
+			string json = @"{
+				""dateTimeValue"": ""2014-05-02T05:52:10.569000+00:00""
+			}";
+
+			JsonMapper.Options = JsonMapperOptions.DateTimesAlwaysUniversal;
+
+			DateTimeTest dateTimeTest = JsonMapper.ToObject<DateTimeTest>(json);
+			Assert.AreEqual(DateTimeKind.Utc, dateTimeTest.dateTimeValue.Kind);
+
+			json = @"{
+				""dateTimeValue"": ""2014-05-02T05:52:10.569000""
+			}";
+
+			dateTimeTest = JsonMapper.ToObject<DateTimeTest>(json);
+			Assert.AreEqual(DateTimeKind.Utc, dateTimeTest.dateTimeValue.Kind);
+
+			JsonMapper.Options = JsonMapperOptions.None;
+		}
     }
 }

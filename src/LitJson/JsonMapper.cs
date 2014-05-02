@@ -96,6 +96,13 @@ namespace LitJson
 
     public delegate IJsonWrapper WrapperFactory ();
 
+	[Flags]
+	public enum JsonMapperOptions
+	{
+		None = 0x00,
+		DateTimesAlwaysUniversal = 0x01,
+	}
+
 
     public class JsonMapper
     {
@@ -104,6 +111,8 @@ namespace LitJson
         /// </summary>
         [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
         public class IncludeAttribute : Attribute { }
+
+		public static JsonMapperOptions Options;
 
         /// <summary>
         /// Attribute to be placed on public fields or properties to exclude them from serialization.
@@ -746,7 +755,11 @@ namespace LitJson
                               typeof (char), importer);
 
             importer = delegate (object input) {
-                return Convert.ToDateTime ((string) input, datetime_format);
+				DateTime result = Convert.ToDateTime ((string) input, datetime_format);
+				if ((JsonMapper.Options & JsonMapperOptions.DateTimesAlwaysUniversal) != 0) {
+					result = result.ToUniversalTime();
+				}
+				return result;
             };
             RegisterImporter (base_importers_table, typeof (string),
                               typeof (DateTime), importer);
